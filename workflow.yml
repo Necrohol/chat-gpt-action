@@ -1,0 +1,25 @@
+name: Generate tips with GPT-3
+on:
+  push:
+    branches:
+      - main
+  discussion:
+    types: [created]
+jobs:
+  generate_tips:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Get tips from GPT-3
+      uses: openai/action-gpt@v1
+      with:
+        api_key: ${{ secrets.OPENAI_API_KEY }}
+        prompt: 'What are some tips for improving this code commit?'
+    - name: Post tips as comment
+      uses: peter-evans/create-or-update-comment@v1
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        body: ${{ steps.get_tips.outputs.stdout }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
